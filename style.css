@@ -1,26 +1,52 @@
-html, body {
+:root {
+    --icon-dim: 2.9em;
+    --gem-dim: 10px;
+}
+
+html {
     margin: 0;
+    padding: 0;
     width: 100%;
     height: 100%;
-    background-image: radial-gradient(ellipse farthest-corner, black, black);
-    overflow: hidden;
+    z-index: -100;
+}
+
+html::-webkit-scrollbar, body::-webkit-scrollbar { /* Hide scrollbar for Chrome, Safari and Opera */
+    display: none;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
     z-index: -1;
+
+    background-color: black;
+
+    overflow: hidden;
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
 }
 
 .icon {
-    background-image: radial-gradient(black, grey);
-    border-radius: 100%;
+    width: var(--icon-dim);
+    height: var(--icon-dim);
     transform: translate(var(--stroke-width), var(--stroke-width));
+
+    background-image: radial-gradient(black, grey);
+
+    border-radius: 100%;
     border-style: solid;
     border-color: grey;
     border-width: 5px;
+
     visibility: hidden;
     opacity: 0;
     z-index: 2;
 }
 
 .secret {
-    /* background-image: radial-gradient(black, rgb(255,255,70)); */
     background-image: radial-gradient(goldenrod, rgb(255,255,70));
     border-color: goldenrod;
 }
@@ -34,7 +60,7 @@ html, body {
 
 .gem {
     z-index:1;
-    padding: 10px;
+    padding: var(--gem-dim);
 }
 
 .celestial {
@@ -43,27 +69,33 @@ html, body {
 }
 
 #icon_title {
-    margin:0;
     position:absolute;
     top:50%;
     transform: translate(0%, -50%);
+
+    margin:0;
     width:100%;
+
     text-align: center;
+    font-size: 2em;
+    font-style: "Garamond", serif;
 
     opacity: 0;
-    font-size: 70;
-    font-style: "Garamond", serif;
+}
+
+.page {
+    display: none;
 }
 
 #exit {
-    width: 80px;
-    height: 50px;
+    width: 5em;
+    height: 3em;
     position:absolute;
     top: 7%;
     left: 50%;
     transform: translate(-50%, -50%);
 
-    background-image: radial-gradient(ellipse closest-side, rgb(100,0,50), black);
+    background-image: radial-gradient(ellipse closest-side, rgb(100,0,50), rgb(0,0,100));
     border-color: white;
     border-radius: 50%;
     border-style:solid;
