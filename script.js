@@ -83,11 +83,10 @@ function playSong(song) {
 
     playNote(song.notes[song.index]);
     // setTimeout(playSong, song.notes_lenght[song.index++] * song.quarter_lenght * 1000, song);
-    song.index++;
 }
 
 function pauseSong(song) {
-    song.notes[song.index-1].pause()
+    song.notes[song.index].pause()
 }
 
 var song = song0;
