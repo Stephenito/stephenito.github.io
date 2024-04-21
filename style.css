@@ -44,6 +44,9 @@ body {
     visibility: hidden;
     opacity: 0;
     z-index: 2;
+
+    top:50%;
+    left:50%;
 }
 
 .secret {

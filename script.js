@@ -10,6 +10,7 @@ const stars_total_animation_lenght = 3;
 const velocity_from = 2; 
 const velocity_to = 12; 
 const computation_interval = 0.2; // s
+const opacity_interval = 1;
 
 const ell_a = window.innerWidth / 2;
 const ell_b = window.innerHeight / 2;
@@ -58,7 +59,7 @@ var song1 = {
     index: 0,
     play: false
 };
-universe_sounds.volume = 0.2;
+interstellar.volume = 0.6;
 
 var song2 = {
     notes: [d6, g6, c6, a6, e6, a6, g6, c6],
@@ -132,7 +133,7 @@ function spawnStars(num_stars, animation_length) {
     for (let i=0; i<num_stars; i++) {
         let star = document.createElement("img");
         star.velocity = Math.random() * (velocity_to - velocity_from) + velocity_from;
-        star.ready = false;
+        star.setAttribute("ready", false);
 
         star.src = "images/star.svg";
         star.className = "celestial star";
@@ -140,19 +141,20 @@ function spawnStars(num_stars, animation_length) {
         star.rho = Math.max(Math.random(), Math.random()) * rho_multiplier;
         star.theta = Math.random() * Math.PI * 2;
         let dim = Math.ceil(Math.random() * (star_dim_to - star_dim_from) + star_dim_from);
-        let positionX = Math.floor(star.rho * ell_a * Math.cos(star.theta) + ell_a);
-        let positionY = Math.floor(star.rho * ell_b * Math.sin(star.theta) + ell_b);
-        let opacity = (Math.pow((positionX - ell_a)/ell_a, 2) + Math.pow((positionY - ell_b)/ell_b, 2)) * Math.random() + 0.5;
+        let x = Math.floor(star.rho * ell_a * Math.cos(star.theta));
+        let y = Math.floor(star.rho * ell_b * Math.sin(star.theta));
+        // let opacity = (Math.pow((x)/ell_a, 2) + Math.pow((y)/ell_b, 2) + 0.5) * Math.max(Math.random(), Math.random()) + 0.2;
+        let opacity = 0.5;
 
         gsap.to(star, {
             opacity: opacity, 
             width: dim, 
             height: dim, 
-            top: positionY, 
-            left: positionX, 
+            y: y, 
+            x: x, 
             duration: stars_single_animation_lenght}, 
             "<+=".concat(delay))
-        .then(result => { result._targets[0].ready = true; });
+        .then(result => { result._targets[0].setAttribute("ready", true); });
         
         stars.unshift(star); 
         moving.unshift(star);
@@ -167,7 +169,7 @@ function spawnGems() {
     for (let i=0; i<6; i++) {
         let star = document.createElement("img");
         star.velocity = Math.random() * (velocity_to - velocity_from) + velocity_from;
-        star.ready = false;
+        star.setAttribute("ready", false);
 
         star.src = "images/gems/gem".concat(gem_index).concat(".svg");
         star.className = "celestial star gem";
@@ -204,8 +206,8 @@ function spawnGems() {
         star.rho = Math.random() * 0.8 + 0.2;
         star.theta = Math.random() * Math.PI * 2;
         
-        let positionX = Math.floor(star.rho * ell_a * Math.cos(star.theta) + ell_a);
-        let positionY = Math.floor(star.rho * ell_b * Math.sin(star.theta) + ell_b);
+        let x = Math.floor(star.rho * ell_a * Math.cos(star.theta));
+        let y = Math.floor(star.rho * ell_b * Math.sin(star.theta));
 
         gem_index++;
         
@@ -213,11 +215,11 @@ function spawnGems() {
             opacity: 1, 
             width: gem_dim, 
             height: gem_dim, 
-            top: positionY, 
-            left: positionX, 
+            y: y, 
+            x: x, 
             duration: stars_single_animation_lenght}, 
             "<+=".concat(delay))
-        .then(result => { result._targets[0].ready = true; });
+        .then(result => { result._targets[0].setAttribute("ready", true); });
 
         gems.push(star); 
         moving.push(star);
@@ -232,13 +234,14 @@ function removeStars(num_stars) {
         num_stars = stars.length;
         
     for (let i=0; i<num_stars; i++) {
-        stars[0].ready = false;
+        stars[0].setAttribute("ready", false);
         gsap.to(stars[0], {
             opacity: 0, 
-            top: "50%", 
-            left: "50%",
+            y: 0, 
+            x: 0,
             scale: 0, 
-            duration: stars_single_animation_lenght})
+            duration: stars_single_animation_lenght}, 
+            "<+=".concat(delay))
         .then(result => result._targets[0].remove());
 
         stars.shift(); 
@@ -260,18 +263,18 @@ var showTitle = gsap.to("#icon_title", {
 });
 
 function addIcon(icon, rho, theta, clickEvent) {
-    icon.ready = true;
+    icon.setAttribute("ready", true);
 
     // icon.rho = Math.max(Math.random(), Math.random()) * 0.3 + 0.4;
     icon.rho = rho;
     icon.theta = theta;
-    icon.velocity = (velocity_to - velocity_from);
+    icon.velocity = (velocity_to + velocity_from)/2;
 
-    positionX = Math.floor(icon.rho * ell_a * Math.cos(icon.theta) + ell_a);
-    positionY = Math.floor(icon.rho * ell_b * Math.sin(icon.theta) + ell_b);
+    x = Math.floor(icon.rho * ell_a * Math.cos(icon.theta));
+    y = Math.floor(icon.rho * ell_b * Math.sin(icon.theta));
 
-    icon.style.top = "".concat(positionY).concat("px");
-    icon.style.left = "".concat(positionX).concat("px");
+    icon.style.y = "".concat(y).concat("px");
+    icon.style.x = "".concat(x).concat("px");
 
     var zoom = gsap.to(icon, {
         paused: true,
@@ -304,6 +307,9 @@ for (let i=0; i<icon_order.length; i++) {
 for (let i=0; i<settings_order.length; i++) {
     let icon = document.querySelector("#setting".concat(i));
     addIcon(icon, 0.75, Math.PI * 2 * i/settings_order.length, settingEvent);
+
+    if (icon.id == "setting3")
+        icon.animating = false;
 }
 
 /* Move objects */
@@ -331,23 +337,49 @@ function moveEllipse() {
         return;
     }
         
-    for (let x in moving) {
-        let star = moving[x]
+    for (let i in moving) {
+        let star = moving[i]
 
-        if (!star.ready) {
-            console.log();
+        if (star.getAttribute("ready") == "false")
             continue;
-        }
+            
 
         star.theta = star.theta + (star.velocity)/180*Math.PI * computation_interval 
-        let new_x = ell_a * (1 + Math.cos(star.theta) * star.rho)
-        let new_y = ell_b * (1 + Math.sin(star.theta) * star.rho)
-        gsap.to(star, {top: new_y, left: new_x, duration: computation_interval, ease:"none"});
+        star.next_X = ell_a * Math.cos(star.theta) * star.rho
+        star.next_Y = ell_b * Math.sin(star.theta) * star.rho
     }
+
+    gsap.to(".celestial[ready=true]", {
+        y: function (index, target, targets) { return target.next_Y; }, 
+        x: function (index, target, targets) { return target.next_X; },  
+        duration: computation_interval, 
+        ease:"none"});
+
     setTimeout(moveEllipse, computation_interval * 1000);
 }
-// setTimeout(moveEllipse, stars_total_animation_lenght * 1000 + 100);
 moveEllipse();
+
+function changeOpacity() {
+    if (inside_galaxy) {
+        setTimeout(changeOpacity, opacity_interval * 1000);
+        return;
+    }
+        
+    // for (let i in moving) {
+    //     let star = moving[i]
+
+    //     if (star.getAttribute("ready") == "false")
+    //         continue;
+    // }
+
+    gsap.to(".star[ready=true]:not(.gem)", {
+        opacity: "random(0.3, 1)",
+        duration: opacity_interval, 
+        ease:"none"});
+
+    setTimeout(changeOpacity, opacity_interval * 1000);
+}
+changeOpacity();
 
 /* Stars event */
 
@@ -356,9 +388,8 @@ function clearGems() {
     for (let i in gems) {
         gems[i].clicked = false;
         gems[i].anim.click.pause();
-        gems[i].anim.clickOnce.reverse();
-        gems[i].anim.zoom.play();
-        gems[i].anim.zoom.reverse();
+        // gems[i].anim.clickOnce.reverse()
+        gems[i].anim.zoom.reverse()
     }
 }
 
@@ -368,8 +399,8 @@ function gemEvent(event) {
     if (event.type == "click") {
         if (!gem.clicked) {
             gem.clicked = true;
-            gem.anim.clickOnce.play();
-            gem.anim.click.play();
+            gem.anim.clickOnce.restart();
+            gem.anim.click.restart();
 
             clicked_gems.push(gem.id);
             
@@ -395,7 +426,7 @@ function gemEvent(event) {
         }
     } else if (event.type == "mouseenter") {
         if (!gem.clicked)
-            gem.anim.zoom.play();
+            gem.anim.zoom.restart();
     } else if (event.type == "mouseleave") {
         if (!gem.clicked)
             gem.anim.zoom.reverse();
@@ -411,20 +442,20 @@ function iconEvent(event) {
     if (event.type == "click" && !inside_galaxy) {
         inside_galaxy = true;
 
-        icon.anim.click.play().then(() => { icon.anim.click.reverse(); }).then(() => {icon.anim.showTitle.reverse(); icon.anim.zoom.reverse(); });
+        icon.anim.click.restart().then(() => { icon.anim.click.reverse(); }).then(() => {icon.anim.showTitle.reverse(); icon.anim.zoom.reverse(); });
         
         timeline.pause()
-        tl_escape.timeScale(1).play()
+        tl_escape.timeScale(1).restart()
         tl_escapestars = gsap.timeline()
         for (let x in moving) {
             let star = moving[x]
-            let new_x = ell_a * (1 + Math.cos(star.theta) * (star.rho * 3))
-            let new_y = ell_b * (1 + Math.sin(star.theta) * (star.rho * 3))
-            tl_escapestars.to(star, {top: new_y, left: new_x, duration: 1, opacity: 0, scale:5, ease:"expo.inOut"}, "<+=0.005");
+            let X = ell_a * Math.cos(star.theta) * (star.rho * 3)
+            let Y = ell_b * Math.sin(star.theta) * (star.rho * 3)
+            tl_escapestars.to(star, {y: Y, x: X, duration: 1, opacity: 0, scale:5, ease:"expo.inOut"}, "<+=".concat(1/moving.length));
         }
     }
     else if (event.type == "mouseenter") {
-        icon.anim.zoom.play();
+        icon.anim.zoom.restart();
         playNote(icon_hover);
 
         if (icon.className.includes("secret"))
@@ -433,7 +464,7 @@ function iconEvent(event) {
             document.getElementById("icon_title").style.color = "rgb(255, 255, 255, 0.5)";
         document.getElementById("icon_title").innerText = icon.attributes.name.value;
 
-        icon.anim.showTitle.play();
+        icon.anim.showTitle.restart();
     } else if (event.type == "mouseleave") {
         icon.anim.zoom.reverse();
         icon.anim.showTitle.reverse();
@@ -443,7 +474,7 @@ function iconEvent(event) {
 function settingEvent(event) {
     let icon = event.srcElement;
 
-    icon.anim.click.play().then(() => { icon.anim.click.reverse(); });
+    icon.anim.click.restart().then(() => { icon.anim.click.reverse(); });
 
     if (icon.id == "setting0") {
         items = stars.concat(gems);
@@ -462,8 +493,11 @@ function settingEvent(event) {
         removeStars(20);
     }
     if (icon.id == "setting3") {
-        let anim = gsap.to(".gem", {paused: true, scale: 3, duration: 0.5, ease: "circ.out"});
-        anim.play().then(() => anim.reverse() );
+        if (!icon.animating) {
+            icon.animating = true;
+            let anim = gsap.to(".gem", {paused: true, scale: 3, duration: 0.5, ease: "circ.out"});
+            anim.restart().then(() => anim.reverse() ).then(() => icon.animating = false);
+        }
     }
     if (icon.id == "setting4") {
         if (!icon.clicked)
@@ -497,7 +531,7 @@ function exitEvent(event) {
     }
     else if (event.type == "mouseenter") {
         playNote(icon_hover);
-        exit.anim.zoom.play();
+        exit.anim.zoom.restart();
     } else if (event.type == "mouseleave") {
         exit.anim.zoom.reverse();
     }
