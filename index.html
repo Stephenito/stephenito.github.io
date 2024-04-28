@@ -4,7 +4,8 @@
         <link rel="stylesheet" href="style.css">
         <link rel="icon" type="image/svg+xml" href="images/galaxy.svg">
     </head>
-    <body>
+    <body class="galaxy_body">
+        <canvas id="star_canvas"></canvas>
         <div id="container">
             <h1 id="icon_title"></h1>
 
@@ -31,7 +32,13 @@
         </div>
 
         <div num="1" class="page">
-            
+            <p>C / C++</p><div class="bar"><div class="progress" level="8"></div></div>
+            <p>Python</p><div class="bar"><div class="progress" level="9"></div></div>
+            <p>C# / Java</p><div class="bar"><div class="progress" level="7"></div></div>
+            <p>HTML / CSS</p><div class="bar"><div class="progress" level="6"></div></div>
+            <p>Javascript</p><div class="bar"><div class="progress" level="7"></div></div>
+            <p>SQL</p><div class="bar"><div class="progress" level="9"></div></div>
+            <p>MongoDB</p><div class="bar"><div class="progress" level="4"></div></div>
         </div>
 
         <div num="2" class="page">
@@ -69,6 +76,9 @@
         <div id="exit"></div>
 
         <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
-        <script src="script.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/PixiPlugin.min.js"></script>
+        <script src="https://pixijs.download/release/pixi.js"></script>
+        <script src="pages.js" type="module"></script>
+        <script src="galaxy.js" type="module"></script>
     </body>
 </html>
