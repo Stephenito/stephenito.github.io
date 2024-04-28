@@ -449,6 +449,7 @@ function iconEvent(event) {
             tl_escapestars.to(star, {y: Y, x: X, duration: 1, opacity: 0, scale:5, ease:"expo.inOut"}, "<+=".concat(1/(stars.length + moving.length)))
                 .then(() => { 
                     document.getElementsByTagName("html")[0].style.overflow = "auto";
+                    window.onresize = null;
                     pagesFunctions[icon.getAttribute("num")](); 
                 });
         }
@@ -512,9 +513,16 @@ function exitEvent(event) {
     let exit = event.srcElement;
 
     if (event.type == "click") {
+        document.getElementsByTagName("html")[0].style.overflow = "hidden"; 
+        
         pageTimeline.timeScale(2).reverse()
             .then(() => { tl_escape.timeScale(2).reverse(); tl_escapestars.reverse()
-            .then(() => { timeline.resume(); inside_galaxy = false; }); document.getElementsByTagName("html")[0].style.overflow = "hidden"; })
+            .then(() => { 
+                timeline.resume(); 
+                inside_galaxy = false;
+                window.onresize = function(){ location.reload(); };
+            }); 
+            })
     }
     else if (event.type == "mouseenter") {
         playNote(icon_hover);
