@@ -1,4 +1,4 @@
-var pageTimeline;
+var pageTimeline = gsap.timeline();
 
 function page0() {
 

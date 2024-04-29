@@ -8,13 +8,14 @@ window.onresize = function(){ location.reload(); }
 
 const star_dim_from = 2;
 const star_dim_to = 10;
-const gem_dim = star_dim_to;
+const gem_dim = (window.innerHeight + window.innerWidth)/250;
+const icon_dim = (window.innerHeight + window.innerWidth)/50;
 
-const num_stars = 200;
+const num_stars = 300;
 const stars_single_animation_lenght = 1;
 const stars_total_animation_lenght = 3;
 const velocity_from = 2; 
-const velocity_to = 12; 
+const velocity_to = 8; 
 const velocity_from_r = velocity_from * Math.PI / 180; 
 const velocity_to_r = velocity_to * Math.PI / 180; 
 const computation_interval = 0.2; // s
@@ -28,6 +29,12 @@ const norm_b = ell_b/Math.sqrt((Math.pow(ell_a,2) + Math.pow(ell_b,2)))
 
 const icon_order = [3, 1, 2, 5, 4, 7, 6, 8, 9, 0];
 const settings_order = [0, 1, 2, 3, 4];
+
+/* Adjust CSS */
+
+const root = document.querySelector(":root");
+root.style.setProperty("--icon-dim", icon_dim.toString() + "px");
+root.style.setProperty("--gem-dim", gem_dim.toString() + "px");
 
 /* PixiJS */
 
@@ -317,6 +324,10 @@ function moveEllipse() {
         star.theta = star.theta + (star.velocity)/180*Math.PI * computation_interval 
         star.next_X = ell_a * Math.cos(star.theta) * star.rho
         star.next_Y = ell_b * Math.sin(star.theta) * star.rho
+        if (star.className.includes("icon")) {
+            star.next_X -= icon_dim/2;
+            star.next_Y -= icon_dim/2;
+        }
     }
 
     gsap.to(".celestial[ready=true]", {
@@ -364,7 +375,7 @@ function changeOpacity() {
     for (let i in stars) {
         if (stars[i].ready)
             gsap.to(stars[i], { pixi: {
-                alpha: "random(0.3, 1)" },
+                alpha: "random(0.2, 0.7)" },
                 duration: opacity_interval, 
                 ease:"none"});
     }
@@ -522,7 +533,7 @@ function exitEvent(event) {
                 inside_galaxy = false;
                 window.onresize = function(){ location.reload(); };
             }); 
-            })
+        });
     }
     else if (event.type == "mouseenter") {
         playNote(icon_hover);
@@ -564,6 +575,7 @@ tl_escape.to("body", {backgroundImage: "radial-gradient(ellipse closest-side, rg
 tl_escape.to("body", {backgroundImage: "radial-gradient(ellipse closest-side, rgb(0,0,20), rgb(0,0,20), rgb(0,0,20)", duration: 0.1, ease:"none"});
 tl_escape.to(container, {display: "none", duration: 0});
 tl_escape.to("#star_canvas", {display: "none", duration: 0});
+tl_escape.to("#exit_container", {display: "block", duration: 0})
 tl_escape.to(exit, {opacity: 0.5, display: "block", duration: 1})
 
 spawnStars(num_stars, stars_total_animation_lenght);
