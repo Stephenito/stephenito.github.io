@@ -28,7 +28,61 @@ const norm_a = ell_a/Math.sqrt((Math.pow(ell_a,2) + Math.pow(ell_b,2)))
 const norm_b = ell_b/Math.sqrt((Math.pow(ell_a,2) + Math.pow(ell_b,2)))
 
 const icon_order = [3, 1, 2, 5, 4, 7, 6, 8, 9, 0];
-const settings_order = [0, 1, 2, 3, 4];
+const settings_order = [0, 1, 2, 3, 4, 5, 6];
+
+const languages = ["en", "it"];
+const languages_src = ["images/icons/flag-us.svg", "images/icons/flag-it.svg"];
+
+/* Translations */
+
+const help_tips_en = [
+    "Help",
+    "You can change language",
+    "Icons on the inner orbit are personal pages",
+    "Icons on the outer orbit are... not personal pages",
+    "Check them out! Press all the buttons you can!",
+    "Make sure to explore the fractal!",
+    "Why are there stars of different colour?",
+    "Have you seen Marvel's films?",
+    "The order is important!"
+];
+const help_tips_it = [
+    "Aiuto",
+    "Puoi cambiare lingua",
+    "Le icone sull'orbita interna sono pagine personali",
+    "Le icone sull'orbita esterna... non sono pagine",
+    "Scoprile! Premi tutti le icone!",
+    "Ricordati di guardare il frattale prima di uscire",
+    "Perché ci sono stelle di colore diverso?",
+    "Hai visto i film Marvel?",
+    "L'ordine è importante!"
+];
+const desc_icons = {
+    "icon0": ["Awards", "Premi"],
+    "icon1": ["Coding & Tools", "Programmazione"],
+    "icon2": ["Education", "Istruzione"],
+    "icon3": ["Gym", "Palestra"],
+    "icon4": ["Languages", "Lingue"],
+    "icon5": ["Music", "Musica"],
+    "icon6": ["Philosophy", "Filosofia"],
+    "icon7": ["Projects", "Progetti"],
+    "icon8": ["Skills & Knowledge", "Abilità e conoscenze"],
+    "icon9": ["Working experience", "Esperienza lavorativa"],
+    "setting0": ["Draw fractal", "Disegna frattale"],
+    "setting1": ["Spawn stars", "Crea stelle"],
+    "setting2": ["Remove stars", "Rimuovi stelle"],
+    "setting3": ["Show gems", "Rivela gemme"],
+    "setting4": ["Play/pause music", "Accendi/spegni musica"],
+    "setting5": ["Help", "Aiuto"],
+    "setting6": ["English", "Italiano"]
+};
+
+const fractalCanvas = document.getElementById("fractal_canvas");
+fractalCanvas.width = window.innerWidth;
+fractalCanvas.height = window.innerHeight;
+const ctx = fractalCanvas.getContext("2d");
+var imageData = ctx.createImageData(window.innerWidth, window.innerHeight);
+// ctx.imageSmoothingEnabled = false;
 
 /* Adjust CSS */
 
@@ -59,8 +113,8 @@ gem_unselect.volume = 0.1;
 var universe_sounds = new Audio("audio/universe_sounds.mp3");
 var interstellar = new Audio("audio/interstellar.mp3");
 
-var icon_hover = new Audio("audio/icon-hover.mp3");
-icon_hover.volume = 0.2;
+var icon_click = new Audio("audio/icon-hover.mp3");
+icon_click.volume = 0.2;
 
 var c6 = new Audio("audio/c6.mp3");
 var d6 = new Audio("audio/d6.mp3");
@@ -200,6 +254,12 @@ function spawnGems() {
             rotation: 360,
             duration: 1
         });
+        let zoom_rev = gsap.to(star, {
+            paused: true,
+            scale: 1,
+            rotation: 0,
+            duration: 1
+        });
         let clickOnce = gsap.to(star, {
             paused: true,
             scale: 3,
@@ -215,6 +275,7 @@ function spawnGems() {
         });
         star.anim = {};
         star.anim.zoom = zoom;
+        star.anim.zoom_rev = zoom_rev;
         star.anim.clickOnce = clickOnce;
         star.anim.click = click;
         star.addEventListener("mouseenter", gemEvent);
@@ -290,14 +351,15 @@ function addIcon(icon, rho, theta, clickEvent) {
         opacity: 1,
         duration: 0.5
     });
-    var click = gsap.to(icon, {
+    var zoom_rev = gsap.to(icon, {
         paused: true,
-        scale: 2,
-        duration: 0.2
+        scale: 1,
+        opacity: 0.5,
+        duration: 0.5
     });
     icon.anim = {};
     icon.anim.zoom = zoom;
-    icon.anim.click = click;
+    icon.anim.zoom_rev = zoom_rev;
     icon.anim.showTitle = showTitle;
     icon.addEventListener("click", clickEvent);
     icon.addEventListener("mouseenter", iconEvent);
@@ -396,7 +458,7 @@ function clearGems() {
 }
 
 function gemEvent(event) {
-    let gem = event.srcElement;
+    let gem = event.target;
     
     if (event.type == "click") {
         if (!gem.clicked) {
@@ -431,18 +493,21 @@ function gemEvent(event) {
             gem.anim.zoom.restart();
     } else if (event.type == "mouseleave") {
         if (!gem.clicked)
-            gem.anim.zoom.reverse();
+            gem.anim.zoom_rev.restart();
     }
         
 }
 
 function iconEvent(event) {
-    let icon = event.srcElement;
+    let icon = event.target;
 
     if (event.type == "click" && !inside_galaxy) {
         inside_galaxy = true;
 
-        icon.anim.click.restart().then(() => { icon.anim.click.reverse(); }).then(() => {icon.anim.showTitle.reverse(); icon.anim.zoom.reverse(); });
+        playNote(icon_click);
+
+        icon.anim.showTitle.reverse(); 
+        icon.anim.zoom_rev.restart();
         
         timeline.pause()
         tl_escape.timeScale(1).restart()
@@ -451,15 +516,15 @@ function iconEvent(event) {
             let star = stars[x]
             let X = ell_a + ell_a * Math.cos(star.theta) * (star.rho * 3)
             let Y = ell_b + ell_b * Math.sin(star.theta) * (star.rho * 3)
-            tl_escapestars.to(star, {pixi: { y: Y, x: X, alpha: 0, scale:5}, duration: 1, ease:"expo.inOut"}, "<+=".concat(1/(stars.length + moving.length)));
+            tl_escapestars.to(star, {pixi: { y: Y, x: X, alpha: 0, scale:3}, duration: 1, ease:"expo.inOut"}, "<+=".concat(1/(stars.length + moving.length)));
         }
         for (let x in moving) {
             let star = moving[x]
             let X = ell_a * Math.cos(star.theta) * (star.rho * 3)
             let Y = ell_b * Math.sin(star.theta) * (star.rho * 3)
-            tl_escapestars.to(star, {y: Y, x: X, duration: 1, opacity: 0, scale:5, ease:"expo.inOut"}, "<+=".concat(1/(stars.length + moving.length)))
+            tl_escapestars.to(star, {y: Y, x: X, duration: 1, opacity: 0, scale:3, ease:"expo.inOut"}, "<+=".concat(1/(stars.length + moving.length)))
                 .then(() => { 
-                    document.getElementsByTagName("html")[0].style.overflow = "auto";
+                    document.getElementsByTagName("html")[0].style.overflowY = "auto";
                     window.onresize = null;
                     pagesFunctions[icon.getAttribute("num")](); 
                 });
@@ -467,7 +532,6 @@ function iconEvent(event) {
     }
     else if (event.type == "mouseenter") {
         icon.anim.zoom.restart();
-        playNote(icon_hover);
 
         if (icon.className.includes("secret"))
             document.getElementById("icon_title").style.color = "rgb(218, 165, 32, 1)";
@@ -477,25 +541,31 @@ function iconEvent(event) {
 
         icon.anim.showTitle.restart();
     } else if (event.type == "mouseleave") {
-        icon.anim.zoom.reverse();
+        icon.anim.zoom_rev.restart();
         icon.anim.showTitle.reverse();
     }
 }
 
 function settingEvent(event) {
-    let icon = event.srcElement;
+    let icon = event.target;
 
-    icon.anim.click.restart().then(() => { icon.anim.click.reverse(); });
+    playNote(icon_click);
 
     if (icon.id == "setting0") {
-        let items = stars.concat(gems);
-        if (!icon.clicked) {
-            for (let x in items)
-                items[x].rho = Math.random()/5 -0.1 + 0.5
-        } else {
-            for (let x in items)
-                items[x].rho = Math.max(Math.random(), Math.random()) * rho_multiplier;
-        }
+        ctx.clearRect(0, 0, fractalCanvas.width, fractalCanvas.height);
+        fractal_zoom = 1;
+        fractal_offx = 0;
+        fractal_offy = 0;
+
+        tl_fractal = gsap.timeline()
+
+        timeline.pause();
+        tl_fractal.to(".celestial, #star_canvas", {opacity: 0, display: "none", duration: 1}, "start");
+        tl_fractal.to("body", {backgroundImage: "radial-gradient(ellipse closest-side, rgb(0,0,20), rgb(0,0,20), rgb(0,0,20)", duration:1}, "start");
+        tl_fractal.to("#fractal_buttons", {display: "block", opacity: 1, duration: 0.5});
+
+        // mandelbrotGPU(window.innerWidth, window.innerHeight, 1, 0, 0);
+        fractal_worker.postMessage([window.innerWidth, window.innerHeight, fractal_maxiterations, fractal_palette, 1, 0, 0]);
     }
     if (icon.id == "setting1") {
         spawnStars(50, stars_total_animation_lenght/2);
@@ -511,20 +581,71 @@ function settingEvent(event) {
         }
     }
     if (icon.id == "setting4") {
-        if (!icon.clicked)
+        if (!icon.clicked) {
             playSong(song);
-        else
+            icon.style.borderColor = "gold";
+        } else {
             pauseSong(song);
+            icon.style.borderColor = "grey";
+        }
+    }
+    if (icon.id == "setting5") {
+        clearInterval(icon.interval);
+
+        if (typeof icon.n_clicks === "undefined")
+            icon.n_clicks = 0;
+
+        let help_tips = (language == "en") ? help_tips_en : help_tips_it;
+
+        icon.n_clicks = (icon.n_clicks + 1) % help_tips.length;
+
+        icon.setAttribute("name", help_tips[icon.n_clicks]);
+        document.getElementById("icon_title").innerText = help_tips[icon.n_clicks];
+
+        let tl_help = gsap.timeline();
+        if (icon.n_clicks == 1) {
+            tl_help.to("#setting6", {scale: 1.5, opacity: 1, duration: 1, ease: "power4.out"})
+                .then(() => tl_help.reverse());
+        } else if (icon.n_clicks == 2) {
+            tl_help.to(".icon:not(.setting)", {scale: 1.5, opacity: 1, duration: 1, ease: "power4.out"})
+                .then(() => tl_help.reverse());
+        } else if (icon.n_clicks == 3) {
+            tl_help.to(".icon.setting", {scale: 1.5, opacity: 1, duration: 1, ease: "power4.out"})
+                .then(() => tl_help.reverse());
+        } else if (icon.n_clicks == 5) {
+            tl_help.to("#setting0", {scale: 1.5, opacity: 1, duration: 1, ease: "power4.out"})
+                .then(() => tl_help.reverse());
+        }
+    }
+    if (icon.id == "setting6") {
+        let newindex = (languages.indexOf(language) + 1) % languages.length;
+        language = languages[newindex];
+
+        icon.setAttribute("src", languages_src[newindex]);
+        document.getElementById("icon_title").innerText = desc_icons[icon.id][newindex];
+
+        for (let icon_tochange of document.getElementsByClassName("icon"))
+            icon_tochange.setAttribute("name", desc_icons[icon_tochange.id][newindex]);
+
+        if (newindex == 0) {
+            root.style.setProperty("--lan-it", "none");
+            root.style.setProperty("--lan-en", "inline-block");
+        } else if (newindex == 1) {
+            root.style.setProperty("--lan-it", "inline-block");
+            root.style.setProperty("--lan-en", "none");
+        }
+        document.getElementById("f_s_palette").selectedIndex = newindex;
     }
 
     icon.clicked = !icon.clicked;
 }
 
 function exitEvent(event) {
-    let exit = event.srcElement;
+    let exit = event.target;
 
     if (event.type == "click") {
-        document.getElementsByTagName("html")[0].style.overflow = "hidden"; 
+        playNote(icon_click);
+        document.getElementsByTagName("html")[0].style.overflowY = "hidden"; 
         
         pageTimeline.timeScale(2).reverse()
             .then(() => { tl_escape.timeScale(2).reverse(); tl_escapestars.reverse()
@@ -536,7 +657,6 @@ function exitEvent(event) {
         });
     }
     else if (event.type == "mouseenter") {
-        playNote(icon_hover);
         exit.anim.zoom.restart();
     } else if (event.type == "mouseleave") {
         exit.anim.zoom.reverse();
@@ -544,6 +664,8 @@ function exitEvent(event) {
 }
 
 /* Start */
+
+var language = "en";
 
 var gems_found = false;
 var inside_galaxy = false;
@@ -562,9 +684,95 @@ let norm1 = Math.sqrt(Math.pow(Math.cos(theta) * ell_a, 2) + Math.pow(Math.sin(t
 let norm = Math.sqrt(Math.pow(ell_a, 2) + Math.pow(ell_b, 2));
 let rho_multiplier = norm/norm1;
 
+var fractal_computing = false;
+var fractal_settings_on = false;
+var fractal_palette = "yellow";
+var fractal_zoom;
+var fractal_offx;
+var fractal_offy; 
+var fractal_maxiterations = document.getElementById("f_s_iterations").getAttribute("value");
+// var f_s_iterations_max = document.getElementById("f_s_iterations").getAttribute("max");
+
+/* Fractal initialization */
+
+var fractal_worker = new Worker("fractals.js");
+
+fractal_worker.addEventListener("message", function (e) {
+    imageData.data.set(e.data);
+    ctx.putImageData(imageData, 0, 0);
+
+    gsap.to("#fractal_canvas", {opacity: 1, display:"block", duration: 0.5});
+    fractal_computing = false;
+});
+
+document.getElementById("fractal_canvas").addEventListener("click", (event) => {
+    if (!fractal_settings_on && !fractal_computing) {
+        gsap.to("#fractal_canvas", {opacity: 0.3, duration: 0.5});
+        fractal_offx = fractal_offx + (event.clientX - window.innerWidth/2) / fractal_zoom;
+        fractal_offy = fractal_offy + (event.clientY - window.innerHeight/2) / fractal_zoom;
+        fractal_zoom = fractal_zoom * 4;
+        
+        // document.getElementById("f_s_iterations").setAttribute("max", f_s_iterations_max * Math.log2(fractal_zoom))
+
+        fractal_computing = true;
+        fractal_worker.postMessage([window.innerWidth, window.innerHeight, fractal_maxiterations, fractal_palette, fractal_zoom, fractal_offx, fractal_offy]);
+    }
+});
+
+document.getElementById("exit_fractal").addEventListener("click", (event) => {
+    gsap.to("#fractal_canvas", {opacity: 0, display: "none", duration: 0.5})   
+        .then( () => tl_fractal.reverse()
+        .then( () => timeline.resume() ));
+});
+
+document.getElementById("fractal_settings_btn").addEventListener("click", (event) => {
+    if (!event.target.clicked)
+        gsap.to("#fractal_settings", {opacity: 1, display: "block", duration: 0.5});
+    else
+        gsap.to("#fractal_settings", {opacity: 0, display: "none", duration: 0.5});
+    
+    fractal_settings_on = !fractal_settings_on;
+    event.target.clicked = !event.target.clicked;
+});
+
+document.getElementById("f_s_iterations").oninput = (e) => { 
+    fractal_maxiterations = e.target.value; 
+    e.target._tippy.setContent(e.target.value);
+};
+document.getElementById("f_s_iterations").onclick = (e) => { 
+    if (!fractal_computing) {
+        gsap.to("#fractal_canvas", {opacity: 0.3, duration: 0.5});
+
+        fractal_computing = true;
+        fractal_worker.postMessage([window.innerWidth, window.innerHeight, fractal_maxiterations, fractal_palette, fractal_zoom, fractal_offx, fractal_offy]);
+    }
+};
+
+document.getElementById("f_s_palette").onchange = (e) => {
+    fractal_palette = e.target.value;
+
+    if (!fractal_computing) {
+        gsap.to("#fractal_canvas", {opacity: 0.3, duration: 0.5});
+
+        fractal_computing = true;
+        fractal_worker.postMessage([window.innerWidth, window.innerHeight, fractal_maxiterations, fractal_palette, fractal_zoom, fractal_offx, fractal_offy]);
+    }
+}
+
+tippy("#f_s_iterations", {
+    theme: 'tippy',
+    arrow: false,
+    animation: 'shift-away',
+    hideOnClick: false,
+    allowHTML: true
+});
+
+/* Start animation */
+
 var timeline = gsap.timeline();
 var tl_escape = gsap.timeline({paused: true});
 var tl_escapestars;
+var tl_fractal;
 
 timeline.to("body", {backgroundImage: "radial-gradient(ellipse closest-side, rgb(100,0,50), rgb(0, 0, 20), black)", duration: 2, ease:"sine.inOut"}, "start");
 timeline.to("body", {backgroundImage: "radial-gradient(ellipse closest-side, rgb(150,0,70), rgb(0, 0, 50), black)", duration: 6, ease:"sine.inOut", repeat:-1, yoyo:true});
@@ -598,6 +806,8 @@ for (let i=0; i<settings_order.length; i++) {
 
     if (icon.id == "setting3")
         icon.animating = false;
+    if (icon.id == "setting5")
+        icon.interval = setInterval(() => gsap.to(icon, {scale: 1.5, opacity: 1, duration: 0.5, ease: "power2.out"}).then(gsap.to(icon, {delay:0.5, scale: 1, opacity: 0.5, duration: 0.5, ease: "power2.in"})), 5000);
 }
 
 moveEllipse();
