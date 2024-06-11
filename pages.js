@@ -59,16 +59,18 @@ function initPages() {
         btn.addEventListener("click", (e) => toSubpage(e.target.getAttribute("num")));
     }
     
-    let subpages_back_buttons = document.getElementById("subpage_reverse");
-    let zoom = gsap.to(subpages_back_buttons, {
-        paused: true,
-        scale: 1.5,
-        opacity: 1,
-        duration: 0.5
-    });
-    subpages_back_buttons.addEventListener("mouseenter", () => zoom.play());
-    subpages_back_buttons.addEventListener("mouseleave", () => zoom.reverse());
-    subpages_back_buttons.addEventListener("click", () => subpageTimeline.reverse());
+    let subpages_back_buttons = document.getElementsByClassName("subpage_reverse");
+    for (let btn of subpages_back_buttons) {
+        let zoom = gsap.to(btn, {
+            paused: true,
+            scale: 1.5,
+            opacity: 1,
+            duration: 0.5
+        });
+        btn.addEventListener("mouseenter", () => zoom.play());
+        btn.addEventListener("mouseleave", () => zoom.reverse());
+        btn.addEventListener("click", () => subpageTimeline.reverse());
+    }
 }
 
 function toSubpage(to) {
@@ -88,12 +90,12 @@ function toSubpage(to) {
         display: "block",
         duration: 0
     }, "<");
-    subpageTimeline.to("#subpage_reverse", {
+    subpageTimeline.to(".subpage_reverse", {
         opacity: 0.5,
         display: "block",
         duration: 0
     }, "<");
-    subpageTimeline.fromTo(".page[num='" + to + "'], #subpage_reverse_container", {
+    subpageTimeline.fromTo(".page[num='" + to + "'], .subpage_reverse", {
         x: "100%",
         ease: "power2.out",
         duration: 1

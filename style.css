@@ -126,6 +126,10 @@ canvas {
     opacity: 0;
 }
 
+a {
+    width: fit-content;
+}
+
 /* Tooltips */ 
 
 .tippy-box[data-theme~='tippy'] {
@@ -196,24 +200,19 @@ canvas {
     display: none;
 }
 
-#subpage_reverse_container {
-    width: 100%;
-    margin: 0;
-    padding: 0;
-    
-    z-index: 1;
-
-    left: 10%;
-    position:absolute;
-}
-
-#subpage_reverse {
+.subpage_reverse {
     width: var(--btn-dim);
     height: var(--btn-dim);
     transform: rotate(180deg);
 
     opacity: 0.5;
     display: none;
+}
+
+.subpage_header {
+    width: 100%;
+    display: flex;
+    justify-content: center;
 }
 
 .bar {
@@ -267,8 +266,11 @@ h2 {
     margin-left: 0;
     margin-top: 0;
 
-    width: 17%;
     white-space: nowrap;
+}
+
+.barspage p {
+    width: 17%;
 }
 
 .pagerow-pointer {
@@ -280,8 +282,8 @@ h2 {
 .pagerow-pointer p {
     display: inline-block;
     font-size: 2.5rem;
+    text-wrap: wrap;
 
-    margin: 0;
     width:auto;
     transform: translate(0, -50%);
 }
@@ -309,13 +311,49 @@ h2 {
     font-weight: normal;
 }
 
-@media not (orientation: landscape) {
+@media only screen and (orientation: portrait) {
     .image-line-p {
         width: 100%;
+        display: inline;
+    }
+
+    .image-line-img {
+        width: 100%;
+    }
+
+    .full-line-img-div {
+        flex-direction: column;
+    }
+
+    .full-line-img {
+        max-width: 100%;
+    }
+}
+@media only screen and (orientation: landscape) {
+    .subpage .image-line-p {
+        width: 70%;
+        margin-right: 5%;
+    }
+
+    .image-line-img {
+        width: 23%;
+        height: fit-content;
+    }
+
+    .full-line-img-div {
+        flex-direction: row;
+    }
+
+    .full-line-img {
+        max-width: 70%;
     }
 }
 
-.subpage img {
+.image-line-img {
+    margin-bottom: 2rem;
+}
+
+.subpage img:not(.subpage_reverse) {
     object-fit: contain;
     border-radius: 20%;
     border: 5px;
@@ -327,23 +365,14 @@ h2 {
     width: 100%;
 }
 
-.page .image-line-p {
-    width: 70%;
-}
-
-.image-line-img {
-    width: 15rem;
-    margin-left: 5%;
+.img-link {
+    width:100%;
 }
 
 .full-line-img-div {
     width: 100%;
     display: flex;
     justify-content:space-evenly;
-}
-
-.full-line-img {
-    width: 50rem;
 }
 
 .medals {
