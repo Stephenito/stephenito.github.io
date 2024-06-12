@@ -85,17 +85,16 @@ function toSubpage(to) {
         display: "none",
         duration: 0
     });
+    subpageTimeline.to(window, {
+        duration: 0,
+        scrollTo: 0
+    });
     subpageTimeline.to(".page[num='" + to + "']", {
         opacity: 1,
         display: "block",
         duration: 0
     }, "<");
-    subpageTimeline.to(".subpage_reverse", {
-        opacity: 0.5,
-        display: "block",
-        duration: 0
-    }, "<");
-    subpageTimeline.fromTo(".page[num='" + to + "'], .subpage_reverse", {
+    subpageTimeline.fromTo(".page[num='" + to + "']", {
         x: "100%",
         ease: "power2.out",
         duration: 1

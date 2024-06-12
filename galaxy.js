@@ -1,4 +1,5 @@
-gsap.registerPlugin(PixiPlugin)
+gsap.registerPlugin(PixiPlugin);
+gsap.registerPlugin(ScrollToPlugin);
 
 import {pagesFunctions, pageTimeline} from "./pages.js"
 
@@ -527,6 +528,7 @@ function iconEvent(event) {
                     document.getElementsByTagName("html")[0].style.overflowY = "auto";
                     window.onresize = null;
                     pagesFunctions[icon.getAttribute("num")](); 
+                    icon.style.borderColor = "gold";
                 });
         }
     }
