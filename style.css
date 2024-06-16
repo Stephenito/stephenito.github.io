@@ -7,6 +7,8 @@
     
     --lan-it: none;
     --lan-en: inline-block;
+
+    --anim-len: 2s;
 }
 
 html {
@@ -184,7 +186,7 @@ a {
     left: 50%;
     transform: translateX(-50%);
 
-    background-image: radial-gradient(ellipse closest-side, rgb(100,0,50), rgb(0,0,100));
+    /* background-image: radial-gradient(ellipse closest-side, rgb(100,0,50), rgb(0,0,100)); */
     border-color: white;
     border-radius: 50%;
     border-style:solid;
@@ -408,7 +410,7 @@ h2 {
     border-style: solid;
     border-color: goldenrod;
     
-    transition: all 2s ease;
+    transition: all var(--anim-len) ease;
     backface-visibility: hidden;
 }
 

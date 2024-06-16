@@ -1,4 +1,6 @@
 
+import {dis_anim} from "./galaxy.js"
+
 var pageTimeline;
 var subpageTimeline;
 
@@ -26,12 +28,12 @@ function getRGBfromProgress(level, out_string) {
 function showPage(num) {
     pageTimeline = gsap.timeline();
 
-    pageTimeline.to(".page[num='" + num.toString() + "']", {display: "block", opacity: 1, duration: 1, ease:"none"})
+    pageTimeline.to(".page[num='" + num.toString() + "']", {display: "block", opacity: 1, duration: 1 * dis_anim, ease:"none"})
 
                 .to(".progress", {
                     width: function (index, target, targets) { return "".concat(target.getAttribute("level"), "0%"); }, 
                     backgroundColor: function (index, target, targets) { return getRGBfromProgress(parseInt(target.getAttribute("level")), false); },
-                    duration: 1
+                    duration: 1 * dis_anim
                 })
 }
 
@@ -78,7 +80,7 @@ function toSubpage(to) {
     subpageTimeline.to(".page[num='" + to[0] + "'], #exit_container", {
         x: "-100%",
         ease: "power2.in",
-        duration: 1
+        duration: 1 * dis_anim
     });
     subpageTimeline.to(".page[num='" + to[0] + "'], #exit_container", {
         opacity: 0,
@@ -96,10 +98,10 @@ function toSubpage(to) {
     }, "<");
     subpageTimeline.fromTo(".page[num='" + to + "']", {
         x: "100%",
-        ease: "power2.out",
-        duration: 1
+        ease: "power2.out"
     }, {
-        x: "0%"
+        x: "0%",
+        duration: 1 * dis_anim
     });
 }
 

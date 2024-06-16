@@ -16,7 +16,8 @@ const num_stars = 300;
 const stars_single_animation_lenght = 1;
 const stars_total_animation_lenght = 3;
 const velocity_from = 2; 
-const velocity_to = 8; 
+const velocity_to = 8;
+const icon_velocity = 3;
 const velocity_from_r = velocity_from * Math.PI / 180; 
 const velocity_to_r = velocity_to * Math.PI / 180; 
 const computation_interval = 0.2; // s
@@ -29,7 +30,7 @@ const norm_a = ell_a/Math.sqrt((Math.pow(ell_a,2) + Math.pow(ell_b,2)))
 const norm_b = ell_b/Math.sqrt((Math.pow(ell_a,2) + Math.pow(ell_b,2)))
 
 const icon_order = [3, 1, 2, 5, 4, 7, 6, 8, 9, 0];
-const settings_order = [0, 1, 2, 3, 4, 5, 6];
+const settings_order = [0, 1, 2, 3, 4, 5, 6, 7];
 
 const languages = ["en", "it"];
 const languages_src = ["images/icons/flag-us.svg", "images/icons/flag-it.svg"];
@@ -39,6 +40,7 @@ const languages_src = ["images/icons/flag-us.svg", "images/icons/flag-it.svg"];
 const help_tips_en = [
     "Help",
     "You can change language",
+    "For faster browsing, you can disable animations",
     "Icons on the inner orbit are personal pages",
     "Icons on the outer orbit are... not personal pages",
     "Check them out! Press all the buttons you can!",
@@ -49,7 +51,8 @@ const help_tips_en = [
 ];
 const help_tips_it = [
     "Aiuto",
-    "Puoi cambiare lingua",
+    "E' possibile cambiare lingua",
+    "Per una navigazione più veloce, è possibile disattivare le animazioni",
     "Le icone sull'orbita interna sono pagine personali",
     "Le icone sull'orbita esterna... non sono pagine",
     "Scoprile! Premi tutti le icone!",
@@ -68,14 +71,15 @@ const desc_icons = {
     "icon6": ["Philosophy", "Filosofia"],
     "icon7": ["Projects", "Progetti"],
     "icon8": ["Skills & Knowledge", "Abilità e conoscenze"],
-    "icon9": ["Working experience", "Esperienza lavorativa"],
+    "icon9": ["Work experience", "Esperienza lavorativa"],
     "setting0": ["Draw fractal", "Disegna frattale"],
     "setting1": ["Spawn stars", "Crea stelle"],
     "setting2": ["Remove stars", "Rimuovi stelle"],
     "setting3": ["Show gems", "Rivela gemme"],
     "setting4": ["Play/pause music", "Accendi/spegni musica"],
     "setting5": ["Help", "Aiuto"],
-    "setting6": ["English", "Italiano"]
+    "setting6": ["English", "Italiano"],
+    "setting7": ["Disable/Enable animations", "Disattiva/Abilita animazioni"]
 };
 
 const fractalCanvas = document.getElementById("fractal_canvas");
@@ -335,7 +339,7 @@ function addIcon(icon, rho, theta, clickEvent) {
     // icon.rho = Math.max(Math.random(), Math.random()) * 0.3 + 0.4;
     icon.rho = rho;
     icon.theta = theta;
-    icon.velocity = (velocity_to + velocity_from)/2;
+    icon.velocity = icon_velocity;
 
     let x = Math.floor(icon.rho * ell_a * Math.cos(icon.theta));
     let y = Math.floor(icon.rho * ell_b * Math.sin(icon.theta));
@@ -454,7 +458,7 @@ function clearGems() {
         gems[i].clicked = false;
         gems[i].anim.click.pause();
         // gems[i].anim.clickOnce.reverse()
-        gems[i].anim.zoom.reverse()
+        gems[i].anim.zoom_rev.restart()
     }
 }
 
@@ -473,9 +477,14 @@ function gemEvent(event) {
                 if (clicked_gems[0] == "gem0" && clicked_gems[1] == "gem1" && clicked_gems[2] == "gem2" && clicked_gems[3] == "gem3" && clicked_gems[4] == "gem4" && clicked_gems[5] == "gem5" && !gems_found) {
                     gems_found = true;
 
-                    pauseSong(song);
-                    song = song1;
-                    playSong(song);
+                    if (document.getElementById("setting4").clicked) {
+                        pauseSong(song);
+                        song = song1;
+                        playSong(song);
+                    } else {
+                        song = song1;
+                    }
+                    
                     
                     gsap.to(".secret", {opacity: 0.5, visibility: "visible", duration: 2, delay:0.5});
                 } else {
@@ -510,20 +519,29 @@ function iconEvent(event) {
         icon.anim.showTitle.reverse(); 
         icon.anim.zoom_rev.restart();
         
-        timeline.pause()
-        tl_escape.timeScale(1).restart()
-        tl_escapestars = gsap.timeline()
+        timeline.pause();
+        tl_escape = gsap.timeline();
+        tl_escape.to("body", {backgroundImage: "radial-gradient(ellipse closest-side, rgb(50,0,20), rgb(70,0,30), rgb(0,0,20))", duration: 1 * dis_anim, ease:"none"}, "start");
+        tl_escape.to("body", {backgroundImage: "radial-gradient(ellipse closest-side, rgb(0,0,20), rgb(50,0,20), rgb(70,0,30))", duration: 0.3 * dis_anim, ease:"none"});
+        tl_escape.to("body", {backgroundImage: "radial-gradient(ellipse closest-side, rgb(0,0,20), rgb(0,0,20), rgb(50,0,20)", duration: 0.3 * dis_anim, ease:"none"});
+        tl_escape.to("body", {backgroundImage: "radial-gradient(ellipse closest-side, rgb(0,0,20), rgb(0,0,20), rgb(0,0,20)", duration: 0.1 * dis_anim, ease:"none"});
+        tl_escape.to(container, {display: "none", duration: 0});
+        tl_escape.to("#star_canvas", {display: "none", duration: 0});
+        tl_escape.to("#exit_container", {display: "block", duration: 0})
+        tl_escape.to(exit, {opacity: 0.7, display: "block", duration: 1 * dis_anim})
+
+        tl_escapestars = gsap.timeline();
         for (let x in stars) {
             let star = stars[x]
             let X = ell_a + ell_a * Math.cos(star.theta) * (star.rho * 3)
             let Y = ell_b + ell_b * Math.sin(star.theta) * (star.rho * 3)
-            tl_escapestars.to(star, {pixi: { y: Y, x: X, alpha: 0, scale:3}, duration: 1, ease:"expo.inOut"}, "<+=".concat(1/(stars.length + moving.length)));
+            tl_escapestars.to(star, {pixi: { y: Y, x: X, alpha: 0, scale:3}, duration: 1 * dis_anim, ease:"expo.inOut"}, "<+=".concat(1/(stars.length + moving.length) * dis_anim));
         }
         for (let x in moving) {
             let star = moving[x]
             let X = ell_a * Math.cos(star.theta) * (star.rho * 3)
             let Y = ell_b * Math.sin(star.theta) * (star.rho * 3)
-            tl_escapestars.to(star, {y: Y, x: X, duration: 1, opacity: 0, scale:3, ease:"expo.inOut"}, "<+=".concat(1/(stars.length + moving.length)))
+            tl_escapestars.to(star, {y: Y, x: X, duration: 1 * dis_anim, opacity: 0, scale:3, ease:"expo.inOut"}, "<+=".concat(1/(stars.length + moving.length) * dis_anim))
                 .then(() => { 
                     document.getElementsByTagName("html")[0].style.overflowY = "auto";
                     window.onresize = null;
@@ -539,7 +557,7 @@ function iconEvent(event) {
             document.getElementById("icon_title").style.color = "rgb(218, 165, 32, 1)";
         else
             document.getElementById("icon_title").style.color = "rgb(255, 255, 255, 0.5)";
-        document.getElementById("icon_title").innerText = icon.attributes.name.value;
+        document.getElementById("icon_title").innerHTML = icon.attributes.name.value;
 
         icon.anim.showTitle.restart();
     } else if (event.type == "mouseleave") {
@@ -563,7 +581,7 @@ function settingEvent(event) {
 
         timeline.pause();
         tl_fractal.to(".celestial, #star_canvas", {opacity: 0, display: "none", duration: 1}, "start");
-        tl_fractal.to("body", {backgroundImage: "radial-gradient(ellipse closest-side, rgb(0,0,20), rgb(0,0,20), rgb(0,0,20)", duration:1}, "start");
+        tl_fractal.to("body", {backgroundImage: "radial-gradient(ellipse closest-side, rgb(0,0,20), rgb(0,0,20), rgb(0,0,20)", duration: 1}, "start");
         tl_fractal.to("#fractal_buttons", {display: "block", opacity: 1, duration: 0.5});
 
         // mandelbrotGPU(window.innerWidth, window.innerHeight, 1, 0, 0);
@@ -601,20 +619,24 @@ function settingEvent(event) {
 
         icon.n_clicks = (icon.n_clicks + 1) % help_tips.length;
 
-        icon.setAttribute("name", help_tips[icon.n_clicks]);
-        document.getElementById("icon_title").innerText = help_tips[icon.n_clicks];
+        let text = (icon.n_clicks == 0) ? help_tips[icon.n_clicks] : help_tips[icon.n_clicks] + "<br>" + icon.n_clicks + "/" + (help_tips.length - 1)
+        icon.setAttribute("name", text);
+        document.getElementById("icon_title").innerHTML = text;
 
         let tl_help = gsap.timeline();
         if (icon.n_clicks == 1) {
             tl_help.to("#setting6", {scale: 1.5, opacity: 1, duration: 1, ease: "power4.out"})
                 .then(() => tl_help.reverse());
         } else if (icon.n_clicks == 2) {
-            tl_help.to(".icon:not(.setting)", {scale: 1.5, opacity: 1, duration: 1, ease: "power4.out"})
+            tl_help.to("#setting7", {scale: 1.5, opacity: 1, duration: 1, ease: "power4.out"})
                 .then(() => tl_help.reverse());
         } else if (icon.n_clicks == 3) {
+            tl_help.to(".icon:not(.setting)", {scale: 1.5, opacity: 1, duration: 1, ease: "power4.out"})
+                .then(() => tl_help.reverse());
+        } else if (icon.n_clicks == 4) {
             tl_help.to(".icon.setting", {scale: 1.5, opacity: 1, duration: 1, ease: "power4.out"})
                 .then(() => tl_help.reverse());
-        } else if (icon.n_clicks == 5) {
+        } else if (icon.n_clicks == 6) {
             tl_help.to("#setting0", {scale: 1.5, opacity: 1, duration: 1, ease: "power4.out"})
                 .then(() => tl_help.reverse());
         }
@@ -624,7 +646,7 @@ function settingEvent(event) {
         language = languages[newindex];
 
         icon.setAttribute("src", languages_src[newindex]);
-        document.getElementById("icon_title").innerText = desc_icons[icon.id][newindex];
+        document.getElementById("icon_title").innerHTML = desc_icons[icon.id][newindex];
 
         for (let icon_tochange of document.getElementsByClassName("icon"))
             icon_tochange.setAttribute("name", desc_icons[icon_tochange.id][newindex]);
@@ -637,6 +659,19 @@ function settingEvent(event) {
             root.style.setProperty("--lan-en", "none");
         }
         document.getElementById("f_s_palette").selectedIndex = newindex;
+    }
+    if (icon.id == "setting7") {
+        if (!icon.clicked) {
+            dis_anim = 0;
+            root.style.setProperty("--anim-len", "0s");
+
+            icon.style.borderColor = "gold";
+        } else {
+            dis_anim = 1;
+            root.style.setProperty("--anim-len", "2s");
+
+            icon.style.borderColor = "grey";
+        }
     }
 
     icon.clicked = !icon.clicked;
@@ -772,21 +807,14 @@ tippy("#f_s_iterations", {
 /* Start animation */
 
 var timeline = gsap.timeline();
-var tl_escape = gsap.timeline({paused: true});
+var tl_escape;
 var tl_escapestars;
 var tl_fractal;
 
+var dis_anim = 1;
+
 timeline.to("body", {backgroundImage: "radial-gradient(ellipse closest-side, rgb(100,0,50), rgb(0, 0, 20), black)", duration: 2, ease:"sine.inOut"}, "start");
 timeline.to("body", {backgroundImage: "radial-gradient(ellipse closest-side, rgb(150,0,70), rgb(0, 0, 50), black)", duration: 6, ease:"sine.inOut", repeat:-1, yoyo:true});
-
-tl_escape.to("body", {backgroundImage: "radial-gradient(ellipse closest-side, rgb(50,0,20), rgb(70,0,30), rgb(0,0,20))", duration: 1, ease:"none"}, "start");
-tl_escape.to("body", {backgroundImage: "radial-gradient(ellipse closest-side, rgb(0,0,20), rgb(50,0,20), rgb(70,0,30))", duration: 0.3, ease:"none"});
-tl_escape.to("body", {backgroundImage: "radial-gradient(ellipse closest-side, rgb(0,0,20), rgb(0,0,20), rgb(50,0,20)", duration: 0.3, ease:"none"});
-tl_escape.to("body", {backgroundImage: "radial-gradient(ellipse closest-side, rgb(0,0,20), rgb(0,0,20), rgb(0,0,20)", duration: 0.1, ease:"none"});
-tl_escape.to(container, {display: "none", duration: 0});
-tl_escape.to("#star_canvas", {display: "none", duration: 0});
-tl_escape.to("#exit_container", {display: "block", duration: 0})
-tl_escape.to(exit, {opacity: 0.5, display: "block", duration: 1})
 
 spawnStars(num_stars, stars_total_animation_lenght);
 spawnGems();
@@ -828,3 +856,5 @@ exit.anim.zoom = zoom;
 exit.addEventListener("click", exitEvent);
 exit.addEventListener("mouseenter", exitEvent);
 exit.addEventListener("mouseleave", exitEvent);
+
+export {dis_anim};
