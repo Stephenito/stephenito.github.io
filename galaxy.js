@@ -682,7 +682,7 @@ function exitEvent(event) {
 
     if (event.type == "click") {
         playNote(icon_click);
-        document.getElementsByTagName("html")[0].style.overflowY = "hidden"; 
+        document.getElementsByTagName("html")[0].style.overflowY = "hidden";
         
         pageTimeline.timeScale(2).reverse()
             .then(() => { tl_escape.timeScale(2).reverse(); tl_escapestars.reverse()
