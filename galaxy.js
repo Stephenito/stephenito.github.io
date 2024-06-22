@@ -65,7 +65,7 @@ const desc_icons = {
     "icon0": ["Awards", "Premi"],
     "icon1": ["Coding & Tools", "Programmazione"],
     "icon2": ["Education", "Istruzione"],
-    "icon3": ["Gym", "Palestra"],
+    "icon3": ["Sport", "Sport"],
     "icon4": ["Languages", "Lingue"],
     "icon5": ["Music", "Musica"],
     "icon6": ["Philosophy", "Filosofia"],
@@ -485,7 +485,6 @@ function gemEvent(event) {
                         song = song1;
                     }
                     
-                    
                     gsap.to(".secret", {opacity: 0.5, visibility: "visible", duration: 2, delay:0.5});
                 } else {
                     playNote(gem_unselect);
@@ -517,7 +516,12 @@ function iconEvent(event) {
         playNote(icon_click);
 
         icon.anim.showTitle.reverse(); 
-        icon.anim.zoom_rev.restart();
+        if (dis_anim == 1)
+            icon.anim.zoom.reverse();
+        else {
+            icon.anim.zoom.seek(0);
+            // icon.anim.zoom_rev.seek(0);
+        }
         
         timeline.pause();
         tl_escape = gsap.timeline();
@@ -561,7 +565,7 @@ function iconEvent(event) {
 
         icon.anim.showTitle.restart();
     } else if (event.type == "mouseleave") {
-        icon.anim.zoom_rev.restart();
+        icon.anim.zoom.reverse();
         icon.anim.showTitle.reverse();
     }
 }
