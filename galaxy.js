@@ -583,9 +583,13 @@ function settingEvent(event) {
     }
     if (icon.id == "setting3") {
         if (!icon.animating) {
-            icon.animating = true;
-            let anim = gsap.to(".gem", {paused: true, scale: 3, duration: 0.5, ease: "circ.out"});
-            anim.restart().then(() => anim.reverse() ).then(() => icon.animating = false);
+            let anim_gems = document.querySelectorAll(".gem");
+            for (let anim_gem of anim_gems) {
+                if (!anim_gem.clicked) {
+                    anim_gem.anim.clickOnce.restart();
+                    setTimeout(() => anim_gem.anim.clickOnce.reverse(), 1000);
+                }
+            }
         }
     }
     if (icon.id == "setting4") {
@@ -611,22 +615,20 @@ function settingEvent(event) {
         icon.setAttribute("name", text);
         document.getElementById("icon_title").innerHTML = text;
 
-        let tl_help = gsap.timeline();
-        if (icon.n_clicks == 1) {
-            tl_help.to("#setting6", {scale: 1.5, opacity: 1, duration: 1, ease: "power4.out"})
-                .then(() => tl_help.reverse());
-        } else if (icon.n_clicks == 2) {
-            tl_help.to("#setting7", {scale: 1.5, opacity: 1, duration: 1, ease: "power4.out"})
-                .then(() => tl_help.reverse());
-        } else if (icon.n_clicks == 3) {
-            tl_help.to(".icon:not(.setting)", {scale: 1.5, opacity: 1, duration: 1, ease: "power4.out"})
-                .then(() => tl_help.reverse());
-        } else if (icon.n_clicks == 4) {
-            tl_help.to(".icon.setting", {scale: 1.5, opacity: 1, duration: 1, ease: "power4.out"})
-                .then(() => tl_help.reverse());
-        } else if (icon.n_clicks == 6) {
-            tl_help.to("#setting0", {scale: 1.5, opacity: 1, duration: 1, ease: "power4.out"})
-                .then(() => tl_help.reverse());
+        let anim_icons = [];
+        if (icon.n_clicks == 1)
+            anim_icons = document.querySelectorAll("#setting6");
+        else if (icon.n_clicks == 2)
+            anim_icons = document.querySelectorAll("#setting7");
+        else if (icon.n_clicks == 3)
+            anim_icons = document.querySelectorAll(".icon:not(.setting)");
+        else if (icon.n_clicks == 4)
+            anim_icons = document.querySelectorAll(".icon.setting");
+        else if (icon.n_clicks == 6)
+            anim_icons = document.querySelectorAll("#setting0");
+        for (let anim_icon of anim_icons) {
+            anim_icon.anim.zoom.restart();
+            setTimeout(() => anim_icon.anim.zoom.reverse(), 1000);
         }
     }
     if (icon.id == "setting6") {
