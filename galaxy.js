@@ -259,12 +259,6 @@ function spawnGems() {
             rotation: 360,
             duration: 1
         });
-        let zoom_rev = gsap.to(star, {
-            paused: true,
-            scale: 1,
-            rotation: 0,
-            duration: 1
-        });
         let clickOnce = gsap.to(star, {
             paused: true,
             scale: 3,
@@ -280,7 +274,6 @@ function spawnGems() {
         });
         star.anim = {};
         star.anim.zoom = zoom;
-        star.anim.zoom_rev = zoom_rev;
         star.anim.clickOnce = clickOnce;
         star.anim.click = click;
         star.addEventListener("mouseenter", gemEvent);
@@ -356,15 +349,8 @@ function addIcon(icon, rho, theta, clickEvent) {
         opacity: 1,
         duration: 0.5
     });
-    var zoom_rev = gsap.to(icon, {
-        paused: true,
-        scale: 1,
-        opacity: 0.5,
-        duration: 0.5
-    });
     icon.anim = {};
     icon.anim.zoom = zoom;
-    icon.anim.zoom_rev = zoom_rev;
     icon.anim.showTitle = showTitle;
     icon.addEventListener("click", clickEvent);
     icon.addEventListener("mouseenter", iconEvent);
@@ -458,7 +444,7 @@ function clearGems() {
         gems[i].clicked = false;
         gems[i].anim.click.pause();
         // gems[i].anim.clickOnce.reverse()
-        gems[i].anim.zoom_rev.restart()
+        gems[i].anim.zoom.reverse();
     }
 }
 
@@ -468,9 +454,6 @@ function gemEvent(event) {
     if (event.type == "click") {
         if (!gem.clicked) {
             gem.clicked = true;
-            gem.anim.clickOnce.restart();
-            gem.anim.click.restart();
-
             clicked_gems.push(gem.id);
             
             if (clicked_gems.length == 6) {
@@ -491,6 +474,9 @@ function gemEvent(event) {
                 }
                 clearGems();
             } else {
+                gem.anim.clickOnce.restart();
+                gem.anim.click.restart();
+
                 playNote(gem_select);
             }
         } else {
@@ -502,7 +488,7 @@ function gemEvent(event) {
             gem.anim.zoom.restart();
     } else if (event.type == "mouseleave") {
         if (!gem.clicked)
-            gem.anim.zoom_rev.restart();
+            gem.anim.zoom.reverse();
     }
         
 }
@@ -518,10 +504,8 @@ function iconEvent(event) {
         icon.anim.showTitle.reverse(); 
         if (dis_anim == 1)
             icon.anim.zoom.reverse();
-        else {
+        else
             icon.anim.zoom.seek(0);
-            // icon.anim.zoom_rev.seek(0);
-        }
         
         timeline.pause();
         tl_escape = gsap.timeline();
@@ -841,7 +825,7 @@ for (let i=0; i<settings_order.length; i++) {
     if (icon.id == "setting3")
         icon.animating = false;
     if (icon.id == "setting5")
-        icon.interval = setInterval(() => gsap.to(icon, {scale: 1.5, opacity: 1, duration: 0.5, ease: "power2.out"}).then(gsap.to(icon, {delay:0.5, scale: 1, opacity: 0.5, duration: 0.5, ease: "power2.in"})), 5000);
+        icon.interval = setInterval(() => icon.anim.zoom.restart().then(() => icon.anim.zoom.reverse()), 5000);
 }
 
 moveEllipse();
