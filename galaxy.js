@@ -78,7 +78,7 @@ const desc_icons = {
     "setting3": ["Show gems", "Rivela gemme"],
     "setting4": ["Play/pause music", "Accendi/spegni musica"],
     "setting5": ["Help", "Aiuto"],
-    "setting6": ["English", "Italiano"],
+    "setting6": ["Change language", "Cambia lingua"],
     "setting7": ["Disable/Enable animations", "Disattiva/Abilita animazioni"]
 };
 
