@@ -15,11 +15,9 @@ const icon_dim = (window.innerHeight + window.innerWidth)/50;
 const num_stars = 300;
 const stars_single_animation_lenght = 1;
 const stars_total_animation_lenght = 3;
-const velocity_from = 2; 
+const velocity_from = 2;
 const velocity_to = 8;
 const icon_velocity = 3;
-const velocity_from_r = velocity_from * Math.PI / 180; 
-const velocity_to_r = velocity_to * Math.PI / 180; 
 const computation_interval = 0.2; // s
 const opacity_interval = 1;
 
@@ -167,7 +165,7 @@ function playNote(audio) {
 }
 
 function playSong(song) {
-    if (song.index == song.notes.length) 
+    if (song.index == song.notes.length)
         song.index = 0;
 
     playNote(song.notes[song.index]);
@@ -188,10 +186,10 @@ function spawnStars(num_stars, animation_length) {
     for (let i=0; i<num_stars; i++) {
         // let star = document.createElement("img");
         // star.velocity = Math.random() * (velocity_to - velocity_from) + velocity_from;
-        
+
         // star.src = "images/star.svg";
         // star.className = "celestial star";
-        
+
         // star.rho = Math.max(Math.random(), Math.random()) * rho_multiplier;
         // star.theta = Math.random() * Math.PI * 2;
         // let dim = Math.ceil(Math.random() * (star_dim_to - star_dim_from) + star_dim_from);
@@ -205,21 +203,26 @@ function spawnStars(num_stars, animation_length) {
 
         let star = new PIXI.Sprite(texture_star);
 
-        star.velocity = Math.random() * (velocity_to_r - velocity_from_r) + velocity_from_r;
-        star.rho = Math.max(Math.random(), Math.random()) * rho_multiplier;
+        star.velocity = Math.random() * (velocity_to - velocity_from) + velocity_from;
+        // star.rho = Math.max(Math.random(), Math.random()) * rho_multiplier;
+        star.rho = (Math.max(Math.random(), Math.random()) + Math.random())/2 * rho_multiplier;
         star.theta = Math.random() * Math.PI * 2;
-        let dim = Math.ceil(Math.random() * (star_dim_to - star_dim_from) + star_dim_from);
+        star.phi = Math.random() * Math.PI/3 - Math.PI/6;
+        let dim = Math.ceil(Math.random() * (star_dim_to - star_dim_from) + star_dim_from) * (1 + 0.2 * star.phi/(Math.PI/6));
         star.width = dim;
         star.height = dim;
         star.ready = false;
 
         app.stage.addChild(star);
 
-        app.ticker.add(() => {
-            if (star.ready && !inside_galaxy) {
-                star.theta = star.theta + (star.velocity)/180*Math.PI;
+        app.ticker.add((ticker) => {
+          if (star.ready && !inside_galaxy) {
+                star.theta = star.theta + (star.velocity)/180*Math.PI * ticker.elapsedMS/1000;
                 star.x = ell_a + ell_a * Math.cos(star.theta) * star.rho;
                 star.y = ell_b + ell_b * Math.sin(star.theta) * star.rho;
+                // let dim = Math.ceil(Math.random() * (star_dim_to - star_dim_from) + star_dim_from) * (1 + 0.2 * star.phi/(Math.PI/6));
+                star.width = dim;
+                star.height = dim;
             }
         });
 
@@ -227,16 +230,16 @@ function spawnStars(num_stars, animation_length) {
         let y = ell_b + Math.floor(star.rho * ell_b * Math.sin(star.theta));
 
         gsap.fromTo(star, { pixi: {alpha: 0, x: ell_a, y: ell_b} }, {
-            pixi: {alpha: opacity, 
-            width: dim, 
-            height: dim, 
-            y: y, 
-            x: x}, 
-            duration: stars_single_animation_lenght}, 
+            pixi: {alpha: opacity,
+            width: dim,
+            height: dim,
+            y: y,
+            x: x},
+            duration: stars_single_animation_lenght},
             "<+=".concat(delay))
         .then(result => { result._targets[0].ready = true; });
 
-        stars.unshift(star); 
+        stars.unshift(star);
     }
 }
 
@@ -252,7 +255,7 @@ function spawnGems() {
         star.src = "images/gems/gem".concat(gem_index).concat(".svg");
         star.className = "celestial star gem";
         star.id = "gem".concat(gem_index);
-        
+
         let zoom = gsap.to(star, {
             paused: true,
             scale: 2,
@@ -280,26 +283,27 @@ function spawnGems() {
         star.addEventListener("mouseleave", gemEvent);
         star.addEventListener("click", gemEvent);
         star.clicked = false
-        
+
         star.rho = Math.random() * 0.8 + 0.2;
         star.theta = Math.random() * Math.PI * 2;
-        
+        star.phi = Math.random() * Math.PI/3 - Math.PI/6;
+
         let x = Math.floor(star.rho * ell_a * Math.cos(star.theta));
         let y = Math.floor(star.rho * ell_b * Math.sin(star.theta));
 
         gem_index++;
-        
+
         gsap.to(star, {
-            opacity: 1, 
-            width: gem_dim, 
-            height: gem_dim, 
-            y: y, 
-            x: x, 
-            duration: stars_single_animation_lenght}, 
+            opacity: 1,
+            width: gem_dim,
+            height: gem_dim,
+            y: y,
+            x: x,
+            duration: stars_single_animation_lenght},
             "<+=".concat(delay))
         .then(result => { result._targets[0].setAttribute("ready", true); });
 
-        gems.push(star); 
+        gems.push(star);
         moving.push(star);
         container.appendChild(star);
     }
@@ -310,18 +314,18 @@ function removeStars(num_stars) {
 
     if (num_stars > stars.length)
         num_stars = stars.length;
-        
+
     for (let i=0; i<num_stars; i++) {
         stars[0].ready = false;
         gsap.to(stars[0], { pixi: {
-            alpha: 0, 
-            y: ell_b, 
+            alpha: 0,
+            y: ell_b,
             x: ell_a,
-            scale: 0}, 
-            duration: stars_single_animation_lenght}, 
+            scale: 0},
+            duration: stars_single_animation_lenght},
             "<+=".concat(delay));
 
-        stars.shift(); 
+        stars.shift();
         // moving.shift();
     }
 }
@@ -367,14 +371,14 @@ function moveEllipse() {
         setTimeout(moveEllipse, computation_interval * 1000);
         return;
     }
-        
+
     for (let i in moving) {
         let star = moving[i]
 
         if (star.getAttribute("ready") == "false")
             continue;
-            
-        star.theta = star.theta + (star.velocity)/180*Math.PI * computation_interval 
+
+        star.theta = star.theta + (star.velocity)/180*Math.PI * computation_interval
         star.next_X = ell_a * Math.cos(star.theta) * star.rho
         star.next_Y = ell_b * Math.sin(star.theta) * star.rho
         if (star.className.includes("icon")) {
@@ -384,9 +388,9 @@ function moveEllipse() {
     }
 
     gsap.to(".celestial[ready=true]", {
-        y: function (index, target, targets) { return target.next_Y; }, 
-        x: function (index, target, targets) { return target.next_X; },  
-        duration: computation_interval, 
+        y: function (index, target, targets) { return target.next_Y; },
+        x: function (index, target, targets) { return target.next_X; },
+        duration: computation_interval,
         ease:"none"});
 
     setTimeout(moveEllipse, computation_interval * 1000);
@@ -397,22 +401,22 @@ function moveEllipse() {
 //         setTimeout(moveCircle, computation_interval * 1000);
 //         return;
 //     }
-        
+
 //     for (let i in icons) {
 //         let star = icons[i]
 
 //         if (star.getAttribute("ready") == "false")
 //             continue;
-            
-//         star.theta = star.theta + (star.velocity)/180*Math.PI * computation_interval 
+
+//         star.theta = star.theta + (star.velocity)/180*Math.PI * computation_interval
 //         star.next_X = ell_min * Math.cos(star.theta) * star.rho
 //         star.next_Y = ell_min * Math.sin(star.theta) * star.rho
 //     }
 
 //     gsap.to(".icon[ready=true]", {
-//         y: function (index, target, targets) { return target.next_Y; }, 
-//         x: function (index, target, targets) { return target.next_X; },  
-//         duration: computation_interval, 
+//         y: function (index, target, targets) { return target.next_Y; },
+//         x: function (index, target, targets) { return target.next_X; },
+//         duration: computation_interval,
 //         ease:"none"});
 
 //     setTimeout(moveCircle, computation_interval * 1000);
@@ -424,15 +428,15 @@ function changeOpacity() {
         setTimeout(changeOpacity, opacity_interval * 1000);
         return;
     }
-        
+
     for (let i in stars) {
         if (stars[i].ready)
             gsap.to(stars[i], { pixi: {
                 alpha: "random(0.2, 0.7)" },
-                duration: opacity_interval, 
+                duration: opacity_interval,
                 ease:"none"});
     }
-    
+
     setTimeout(changeOpacity, opacity_interval * 1000);
 }
 
@@ -450,12 +454,12 @@ function clearGems() {
 
 function gemEvent(event) {
     let gem = event.target;
-    
+
     if (event.type == "click") {
         if (!gem.clicked) {
             gem.clicked = true;
             clicked_gems.push(gem.id);
-            
+
             if (clicked_gems.length == 6) {
                 if (clicked_gems[0] == "gem0" && clicked_gems[1] == "gem1" && clicked_gems[2] == "gem2" && clicked_gems[3] == "gem3" && clicked_gems[4] == "gem4" && clicked_gems[5] == "gem5" && !gems_found) {
                     gems_found = true;
@@ -467,7 +471,7 @@ function gemEvent(event) {
                     } else {
                         song = song1;
                     }
-                    
+
                     gsap.to(".secret", {opacity: 0.5, visibility: "visible", duration: 2, delay:0.5});
                 } else {
                     playNote(gem_unselect);
@@ -490,7 +494,7 @@ function gemEvent(event) {
         if (!gem.clicked)
             gem.anim.zoom.reverse();
     }
-        
+
 }
 
 function iconEvent(event) {
@@ -501,12 +505,12 @@ function iconEvent(event) {
 
         playNote(icon_click);
 
-        icon.anim.showTitle.reverse(); 
+        icon.anim.showTitle.reverse();
         if (dis_anim == 1)
             icon.anim.zoom.reverse();
         else
             icon.anim.zoom.seek(0);
-        
+
         timeline.pause();
         tl_escape = gsap.timeline();
         tl_escape.to("body", {backgroundImage: "radial-gradient(ellipse closest-side, rgb(50,0,20), rgb(70,0,30), rgb(0,0,20))", duration: 1 * dis_anim, ease:"none"}, "start");
@@ -530,10 +534,10 @@ function iconEvent(event) {
             let X = ell_a * Math.cos(star.theta) * (star.rho * 3)
             let Y = ell_b * Math.sin(star.theta) * (star.rho * 3)
             tl_escapestars.to(star, {y: Y, x: X, duration: 1 * dis_anim, opacity: 0, scale:3, ease:"expo.inOut"}, "<+=".concat(1/(stars.length + moving.length) * dis_anim))
-                .then(() => { 
+                .then(() => {
                     document.getElementsByTagName("html")[0].style.overflowY = "auto";
                     window.onresize = null;
-                    pagesFunctions[icon.getAttribute("num")](); 
+                    pagesFunctions[icon.getAttribute("num")]();
                     icon.style.borderColor = "gold";
                 });
         }
@@ -673,14 +677,14 @@ function exitEvent(event) {
     if (event.type == "click") {
         playNote(icon_click);
         document.getElementsByTagName("html")[0].style.overflowY = "hidden";
-        
+
         pageTimeline.timeScale(2).reverse()
             .then(() => { tl_escape.timeScale(2).reverse(); tl_escapestars.reverse()
-            .then(() => { 
-                timeline.resume(); 
+            .then(() => {
+                timeline.resume();
                 inside_galaxy = false;
                 window.onresize = function(){ location.reload(); };
-            }); 
+            });
         });
     }
     else if (event.type == "mouseenter") {
@@ -716,7 +720,7 @@ var fractal_settings_on = false;
 var fractal_palette = "yellow";
 var fractal_zoom;
 var fractal_offx;
-var fractal_offy; 
+var fractal_offy;
 var fractal_maxiterations = document.getElementById("f_s_iterations").getAttribute("value");
 // var f_s_iterations_max = document.getElementById("f_s_iterations").getAttribute("max");
 
@@ -738,7 +742,7 @@ document.getElementById("fractal_canvas").addEventListener("click", (event) => {
         fractal_offx = fractal_offx + (event.clientX - window.innerWidth/2) / fractal_zoom;
         fractal_offy = fractal_offy + (event.clientY - window.innerHeight/2) / fractal_zoom;
         fractal_zoom = fractal_zoom * 4;
-        
+
         // document.getElementById("f_s_iterations").setAttribute("max", f_s_iterations_max * Math.log2(fractal_zoom))
 
         fractal_computing = true;
@@ -747,7 +751,7 @@ document.getElementById("fractal_canvas").addEventListener("click", (event) => {
 });
 
 document.getElementById("exit_fractal").addEventListener("click", (event) => {
-    gsap.to("#fractal_canvas", {opacity: 0, display: "none", duration: 0.5})   
+    gsap.to("#fractal_canvas", {opacity: 0, display: "none", duration: 0.5})
         .then( () => tl_fractal.reverse()
         .then( () => timeline.resume() ));
 });
@@ -757,16 +761,16 @@ document.getElementById("fractal_settings_btn").addEventListener("click", (event
         gsap.to("#fractal_settings", {opacity: 1, display: "block", duration: 0.5});
     else
         gsap.to("#fractal_settings", {opacity: 0, display: "none", duration: 0.5});
-    
+
     fractal_settings_on = !fractal_settings_on;
     event.target.clicked = !event.target.clicked;
 });
 
-document.getElementById("f_s_iterations").oninput = (e) => { 
-    fractal_maxiterations = e.target.value; 
+document.getElementById("f_s_iterations").oninput = (e) => {
+    fractal_maxiterations = e.target.value;
     e.target._tippy.setContent(e.target.value);
 };
-document.getElementById("f_s_iterations").onclick = (e) => { 
+document.getElementById("f_s_iterations").onclick = (e) => {
     if (!fractal_computing) {
         gsap.to("#fractal_canvas", {opacity: 0.3, duration: 0.5});
 
